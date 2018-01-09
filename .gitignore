@@ -3,6 +3,9 @@
 # Checkpoints jupyter
 .ipynb_checkpoints/
 
+#Fingerprints
+fingerprints/
+
 # User-specific stuff:
 .idea/**/workspace.xml
 .idea/**/tasks.xml
