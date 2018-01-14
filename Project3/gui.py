@@ -15,7 +15,7 @@ class App(Frame):
         super(App, self).__init__()
 
         self.master.state('normal')
-        self.master.title("APBI")
+        self.master.title("Project3")
         self.master.rowconfigure(4, weight=1)
         self.master.columnconfigure(4, weight=1)
         self.grid(sticky=W + E + N + S)
