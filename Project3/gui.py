@@ -47,7 +47,12 @@ class App(Frame):
 
     def k3m(self):
         out = k3m.k3m(self.input_image.copy())
+        imshow(out, cmap=plt.cm.binary)
 
+        # Very dummy way because problems with converting np 1 bit color array to Pillow.Image
+        plt.savefig('temp.png')
+        out = Image.open('temp.png')
+        os.remove("temp.png")
         img = ImageTk.PhotoImage(out)
         self.generated = Label(self, image=img)
         self.generated.image = img

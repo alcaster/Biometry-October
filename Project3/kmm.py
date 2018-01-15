@@ -2,16 +2,16 @@ import numpy as np
 from PIL import Image
 from matplotlib.pyplot import imshow
 from matplotlib import pyplot as plt
+from lookup_tables import NEIGHBOURS_ARRAY, KMM_LOOKUP_ARRAY
 
-CHECK_ARRAY = [
-    3, 5, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31, 48, 52, 53, 54, 55, 56, 60, 61, 62, 63, 65, 67, 69, 71, 77,
-    79, 80, 81, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 97, 99, 101, 103, 109, 111, 112, 113, 115, 116, 117,
-    118, 119, 120, 121, 123, 124, 125, 126, 127, 131, 133, 135, 141, 143, 149, 151, 157, 159, 181, 183, 189, 191, 192,
-    193, 195, 197, 199, 205, 207, 208, 209, 211, 212, 213, 214, 215, 216, 217, 219, 220, 221, 222, 223, 224, 225, 227,
-    229, 231, 237, 239, 240, 241, 243, 244, 245, 246, 247, 248, 249, 251, 252, 253, 254, 255
-]
-NEIGHBOURS_ARRAY = [3, 6, 12, 24, 48, 96, 192, 129, 7, 13, 28, 56, 112, 224, 193, 131, 15, 30, 60, 120, 240, 225, 195,
-                    135]
+
+def check_neighbours(neighbours):
+    w = neighbour_weight(neighbours)
+    return w in NEIGHBOURS_ARRAY
+
+
+def get_neighbours(img, i, j):
+    return img[i - 1:i + 2, j - 1:j + 2]
 
 
 def first_marks(img):
@@ -19,7 +19,7 @@ def first_marks(img):
     for (i, j), v in np.ndenumerate(img):
         if img[i, j] == 1:
             result[i, j] = 1
-            neighbours = img[i - 1:i + 2, j - 1:j + 2]
+            neighbours = get_neighbours(img, i, j)
             try:
                 if neighbours[0][1] == 0 or neighbours[1][0] == 0 or neighbours[1][2] == 0 or neighbours[2][1] == 0:
                     result[i, j] = 2
@@ -59,7 +59,7 @@ def delete_4s(img):
     for (i, j), v in np.ndenumerate(img):
         result[i, j] = img[i, j]
         if img[i, j] == 2 or img[i, j] == 3:
-            neighbours = img[i - 1:i + 2, j - 1:j + 2]
+            neighbours = get_neighbours(img, i, j)
             try:
                 if check_neighbours(neighbours):
                     result[i, j] = 0
@@ -68,18 +68,13 @@ def delete_4s(img):
     return result
 
 
-def check_neighbours(neighbours):
-    w = neighbour_weight(neighbours)
-    return w in NEIGHBOURS_ARRAY
-
-
 def remove_2or3(img, n):
     result = img
     for (i, j), v in np.ndenumerate(img):
         if result[i, j] == n:
-            neighbours = result[i - 1:i + 2, j - 1:j + 2]
+            neighbours = get_neighbours(result, i, j)
             try:
-                result[i, j] = 0 if neighbour_weight(neighbours) in CHECK_ARRAY else 1
+                result[i, j] = 0 if neighbour_weight(neighbours) in KMM_LOOKUP_ARRAY else 1
             except IndexError:
                 pass
     return result
@@ -133,8 +128,8 @@ def kmm(img):
 
 
 if __name__ == '__main__':
-    filename = '../data/images/signatures/3.jpg'
+    filename = '../data/images/signatures/1.jpg'
     img = np.asarray(Image.open(filename))
-    a = kmm(img)
-    imshow(a, cmap=plt.cm.binary)
+    result = kmm(img)
+    imshow(result, cmap=plt.cm.binary)
     plt.show()
