@@ -10,6 +10,8 @@ CHECK_ARRAY = [
     193, 195, 197, 199, 205, 207, 208, 209, 211, 212, 213, 214, 215, 216, 217, 219, 220, 221, 222, 223, 224, 225, 227,
     229, 231, 237, 239, 240, 241, 243, 244, 245, 246, 247, 248, 249, 251, 252, 253, 254, 255
 ]
+NEIGHBOURS_ARRAY = [3, 6, 12, 24, 48, 96, 192, 129, 7, 13, 28, 56, 112, 224, 193, 131, 15, 30, 60, 120, 240, 225, 195,
+                    135]
 
 
 def first_marks(img):
@@ -31,25 +33,25 @@ def first_marks(img):
     return result
 
 
-def neighbour_weight(neighbours):
-    weight = 0
-    if neighbours[0][0] != 0:
-        weight += 128
-    if neighbours[0][1] != 0:
-        weight += 1
-    if neighbours[0][2] != 0:
-        weight += 2
-    if neighbours[1][2] != 0:
-        weight += 4
-    if neighbours[2][2] != 0:
-        weight += 8
-    if neighbours[2][1] != 0:
-        weight += 16
-    if neighbours[2][0] != 0:
-        weight += 32
-    if neighbours[1][0] != 0:
-        weight += 64
-    return weight
+def neighbour_weight(nbs):
+    val = 0
+    if nbs[0][0] != 0:
+        val += 128
+    if nbs[0][1] != 0:
+        val += 1
+    if nbs[0][2] != 0:
+        val += 2
+    if nbs[1][2] != 0:
+        val += 4
+    if nbs[2][2] != 0:
+        val += 8
+    if nbs[2][1] != 0:
+        val += 16
+    if nbs[2][0] != 0:
+        val += 32
+    if nbs[1][0] != 0:
+        val += 64
+    return val
 
 
 def delete_4s(img):
@@ -59,28 +61,25 @@ def delete_4s(img):
         if img[i, j] == 2 or img[i, j] == 3:
             neighbours = img[i - 1:i + 2, j - 1:j + 2]
             try:
-                if check_2_3_4_neighbours(neighbours):
+                if check_neighbours(neighbours):
                     result[i, j] = 0
             except IndexError:
                 pass
     return result
 
 
-def check_2_3_4_neighbours(neighbours):
+def check_neighbours(neighbours):
     w = neighbour_weight(neighbours)
-    return w in [3, 6, 12, 24, 48, 96, 192, 129, 7, 13, 28, 56, 112, 224, 193, 131, 15, 30, 60, 120, 240, 225, 195, 135]
+    return w in NEIGHBOURS_ARRAY
 
 
-def delete_ns(img, n):
+def remove_2or3(img, n):
     result = img
     for (i, j), v in np.ndenumerate(img):
         if result[i, j] == n:
             neighbours = result[i - 1:i + 2, j - 1:j + 2]
             try:
-                if neighbour_weight(neighbours) in CHECK_ARRAY:
-                    result[i, j] = 0
-                else:
-                    result[i, j] = 1
+                result[i, j] = 0 if neighbour_weight(neighbours) in CHECK_ARRAY else 1
             except IndexError:
                 pass
     return result
@@ -107,7 +106,7 @@ def otsu_threshold(im):
 def get_global_thresholding(img, threshold):
     # http://www.cse.iitd.ernet.in/~pkalra/col783/Thresholding.pdf
     if img.ndim == 2:
-        img = np.asarray( Image.fromarray(np.uint8(img * 255) , 'L'))
+        img = np.asarray(Image.fromarray(np.uint8(img * 255), 'L'))
     else:
         img = to_grayscale(img)
     return np.apply_along_axis(_threshold, -1, img, threshold)
@@ -127,10 +126,10 @@ def kmm(img):
     threshold = otsu_threshold(img)
     binarized = get_global_thresholding(img, threshold)
     fm = first_marks(binarized)
-    d4 = delete_4s(fm)
-    d3 = delete_ns(d4, 3)
-    d2 = delete_ns(d3, 2)
-    return d2
+    d = delete_4s(fm)
+    for i in [3, 2] * 3:
+        d = remove_2or3(d, i)
+    return d
 
 
 if __name__ == '__main__':
@@ -139,4 +138,3 @@ if __name__ == '__main__':
     a = kmm(img)
     imshow(a, cmap=plt.cm.binary)
     plt.show()
-

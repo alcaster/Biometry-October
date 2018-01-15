@@ -1,7 +1,7 @@
 import numpy as np
+from kmm import neighbour_weight
 from PIL import Image
 from matplotlib.pyplot import imshow
-from matplotlib import pyplot as plt
 
 A0 = [3, 6, 7, 12, 14, 15, 24, 28, 30, 31, 48, 56, 60,
       62, 63, 96, 112, 120, 124, 126, 127, 129, 131, 135,
@@ -38,48 +38,26 @@ PHASES = {
 
 def iterative_part(result, changed):
     for n in PHASES.keys():
-        result, changed = phase_function(result, n, changed)
+        result, changed = phase(result, n, changed)
     for (i, j), v in np.ndenumerate(result):
         if result[i, j] == 2:
             result[i, j] = 1
     return result, changed
 
 
-def phase_function(img, n, changed):
+def phase(img, n, changed):
     result = np.copy(img)
     for (i, j), v in np.ndenumerate(img):
         try:
-            if n == 0 and get_neighbour_weight(img[i - 1:i + 2, j - 1:j + 2]) in A0:
+            if n == 0 and neighbour_weight(img[i - 1:i + 2, j - 1:j + 2]) in A0:
                 result[i, j] = 2
             elif result[i, j] == 2:
-                if get_neighbour_weight(result[i - 1:i + 2, j - 1:j + 2]) in PHASES[n]:
+                if neighbour_weight(result[i - 1:i + 2, j - 1:j + 2]) in PHASES[n]:
                     changed = True
                     result[i, j] = 0
         except IndexError:
             pass
     return result, changed
-
-
-def get_neighbour_weight(neighbours):
-    weight = 0
-    if neighbours[0][1] != 0:
-        weight += 1
-    if neighbours[0][2] != 0:
-        weight += 2
-    if neighbours[1][2] != 0:
-        weight += 4
-    if neighbours[2][2] != 0:
-        weight += 8
-    if neighbours[2][1] != 0:
-        weight += 16
-    if neighbours[2][0] != 0:
-        weight += 32
-    if neighbours[1][0] != 0:
-        weight += 64
-    if neighbours[0][0] != 0:
-        weight += 128
-    return weight
-
 
 def k3m(img):
     result = np.copy(img)
@@ -95,7 +73,7 @@ def k3m(img):
         result, result_changed = iterative_part(result, result_changed)
     for (i, j), v in np.ndenumerate(result):
         try:
-            if result[i, j] != 0 and get_neighbour_weight(result[i - 1:i + 2, j - 1:j + 2]) in A1pix:
+            if result[i, j] != 0 and neighbour_weight(result[i - 1:i + 2, j - 1:j + 2]) in A1pix:
                 result[i, j] = 0
         except IndexError:
             pass
