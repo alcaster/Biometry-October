@@ -35,10 +35,10 @@ def phase(img, n, changed):
 def k3m(img):
     result = np.copy(img)
     threshold = otsu_threshold(result)
-    result = get_global_thresholding(result, threshold)
+    result = 1-get_global_thresholding(result, threshold)
     result_changed = False
     result, result_changed = iterative(result, result_changed)
-    for _ in tqdm(range(10)):
+    for _ in tqdm(range(30)):
         result_changed = False
         result, result_changed = iterative(result, result_changed)
         if not result_changed:

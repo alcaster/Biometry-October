@@ -119,7 +119,7 @@ def _threshold(pixel, threshold):
 def kmm(img):
     img = np.array(img)
     threshold = otsu_threshold(img)
-    binarized = get_global_thresholding(img, threshold)
+    binarized = 1-get_global_thresholding(img, threshold)
     fm = first_marks(binarized)
     d = delete_4s(fm)
     for i in [3, 2] * 3:
